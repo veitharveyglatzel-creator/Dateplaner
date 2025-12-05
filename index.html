@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veits & Nelas Calendar</title>
+    <style>
+        :root {
+            --color-primary: #208c9e;
+            --color-primary-hover: #1a7a8a;
+            --color-bg: #f8f8f6;
+            --color-surface: #ffffff;
+            --color-text: #1a1a1a;
+            --color-text-secondary: #666666;
+            --color-border: #e0e0e0;
+            --color-success: #28a745;
+            --color-warning: #ffc107;
+            --color-danger: #dc3545;
+            --color-info: #17a2b8;
+            
+            --date-color-1: #ff6b6b;
+            --date-color-2: #4ecdc4;
+            --date-color-3: #ffe66d;
+            --date-color-4: #95e1d3;
+            --date-color-5: #c7a9ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--color-surface);
+            padding: 20px;
+            border-bottom: 2px solid var(--color-border);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: var(--color-primary);
+        }
+
+        .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 14px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(32, 140, 158, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: var(--color-text);
+            border: 2px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--color-border);
+        }
+
+        .btn-danger {
+            background-color: var(--color-danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Calendar View */
+        .calendar-container {
+            background-color: var(--color-surface);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .month-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .month-nav button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .date-card {
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 5px solid var(--color-border);
+            background-color: #f9f9f9;
+            position: relative;
+        }
+
+        .date-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            background-color: var(--color-surface);
+        }
+
+        .date-card.cat-1 { border-left-color: var(--date-color-1); }
+        .date-card.cat-2 { border-left-color: var(--date-color-2); }
+        .date-card.cat-3 { border-left-color: var(--date-color-3); }
+        .date-card.cat-4 { border-left-color: var(--date-color-4); }
+        .date-card.cat-5 { border-left-color: var(--date-color-5); }
+
+        .date-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--color-primary);
+        }
+
+        .date-meta {
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .date-category {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            background-color: rgba(32, 140, 158, 0.1);
+            color: var(--color-primary);
+        }
+
+        /* Detail View */
+        .detail-container {
+            background-color: var(--color-surface);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .detail-header {
+            border-bottom: 2px solid var(--color-border);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-title {
+            font-size: 28px;
+            color: var(--color-primary);
+            margin-bottom: 10px;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-section h3 {
+            font-size: 16px;
+            color: var(--color-text);
+            margin-bottom: 12px;
+            font-weight: 700;
+            border-left: 4px solid var(--color-primary);
+            padding-left: 12px;
+        }
+
+        .detail-content {
+            font-size: 16px;
+            line-height: 1.8;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .sensory-info {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--color-warning);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .backup-plan {
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--color-info);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .buffer-time {
+            background-color: #f0f8f0;
+            border-left: 4px solid var(--color-success);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        /* Feedback Form */
+        .feedback-container {
+            background-color: var(--color-surface);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(32, 140, 158, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .rating-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .rating-btn {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            font-size: 20px;
+            background-color: #f0f0f0;
+            border: 2px solid var(--color-border);
+        }
+
+        .rating-btn.selected {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        /* Last Minute Changes */
+        .changes-container {
+            background-color: var(--color-surface);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid var(--color-warning);
+            color: #856404;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid var(--color-info);
+            color: #0c5460;
+        }
+
+        .change-item {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--color-info);
+        }
+
+        .change-field {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 5px;
+        }
+
+        .change-old {
+            color: var(--color-danger);
+            text-decoration: line-through;
+        }
+
+        .change-new {
+            color: var(--color-success);
+        }
+
+        /* Admin Form */
+        .admin-form-group {
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .admin-form-group h4 {
+            margin-top: 0;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* Filter */
+        .filter-group {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        /* High Contrast Mode */
+        body.high-contrast {
+            --color-bg: #ffffff;
+            --color-surface: #f0f0f0;
+            --color-text: #000000;
+            --color-text-secondary: #333333;
+            --color-border: #000000;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .calendar-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .detail-title {
+                font-size: 24px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .admin-section {
+            background-color: var(--color-surface);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .success-message {
+            background-color: #d4edda;
+            border-left: 4px solid var(--color-success);
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>💕 Veits & Nelas Calendar</h1>
+            <p class="subtitle">Gemeinsame Momente planen, transparente Struktur schaffen</p>
+            <div class="nav-buttons">
+                <button class="btn-primary" onclick="showView('calendar')">📅 Kalender</button>
+                <button class="btn-secondary" onclick="showView('changes')">⚡ Änderungen</button>
+                <button class="btn-secondary" onclick="showView('admin')">⚙️ Dates verwalten</button>
+                <button class="btn-secondary" onclick="toggleHighContrast()">🎨 Kontrast</button>
+                <button class="btn-secondary" onclick="downloadData()">💾 Backup</button>
+            </div>
+        </header>
+
+        <!-- Calendar View -->
+        <div id="calendar" class="view active">
+            <div class="calendar-container">
+                <div class="month-header">
+                    <button class="btn-secondary" onclick="previousMonth()">← Vorheriger Monat</button>
+                    <h2 id="monthTitle" style="font-size: 24px; color: #208c9e;"></h2>
+                    <button class="btn-secondary" onclick="nextMonth()">Nächster Monat →</button>
+                </div>
+
+                <div class="filter-group">
+                    <button class="filter-btn active" onclick="filterDates('all')">Alle</button>
+                    <button class="filter-btn" onclick="filterDates('quality-time')">💑 Zeit zu zweit</button>
+                    <button class="filter-btn" onclick="filterDates('activity')">🎯 Aktivität</button>
+                    <button class="filter-btn" onclick="filterDates('special')">✨ Besonderes</button>
+                    <button class="filter-btn" onclick="filterDates('relax')">🧘 Entspannung</button>
+                </div>
+
+                <div id="calendarGrid" class="calendar-grid"></div>
+
+                <div id="noData" class="text-center" style="display: none; padding: 40px;">
+                    <p style="font-size: 18px; color: #666;">Noch keine Dates für diesen Monat eingeplant.</p>
+                    <p style="color: #999; margin-top: 10px;">Lass dich überraschen – oder schau in einem anderen Monat! 🌟</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail View -->
+        <div id="detail" class="view">
+            <div class="detail-container">
+                <button class="btn-secondary" onclick="showView('calendar')" style="margin-bottom: 20px;">← Zurück</button>
+                
+                <div class="detail-header">
+                    <h2 class="detail-title" id="detailTitle"></h2>
+                    <p id="detailCategory" class="date-category"></p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>📍 Termin & Ort</h3>
+                    <div class="detail-content">
+                        <p><strong>Datum:</strong> <span id="detailDate"></span></p>
+                        <p><strong>Zeit:</strong> <span id="detailTime"></span></p>
+                        <p><strong>Dauer:</strong> <span id="detailDuration"></span></p>
+                        <p><strong>Ort:</strong> <span id="detailLocation"></span></p>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3>📝 Aktivität</h3>
+                    <div class="detail-content" id="detailActivity"></div>
+                </div>
+
+                <div class="buffer-time">
+                    <h3>⏰ Pufferzeit</h3>
+                    <p id="detailBuffer"></p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>💰 Infos</h3>
+                    <div class="detail-content">
+                        <p><strong>Kosten:</strong> <span id="detailCost"></span></p>
+                        <p><strong>Mitbringen:</strong> <span id="detailBring"></span></p>
+                    </div>
+                </div>
+
+                <div class="sensory-info">
+                    <h3>🎧 Sensorische Infos</h3>
+                    <p><strong>Lautstärke-Level:</strong> <span id="detailSoundLevel"></span></p>
+                    <p><strong>Menschenmenge:</strong> <span id="detailCrowd"></span></p>
+                    <p><strong>Stimming-Tipps:</strong> <span id="detailStimming"></span></p>
+                </div>
+
+                <div class="backup-plan">
+                    <h3>🛡️ Backup-Plan (falls zu überwältigend)</h3>
+                    <p id="detailBackup"></p>
+                </div>
+
+                <div class="detail-section">
+                    <h3>📌 Mein Tagesablauf davor</h3>
+                    <div class="detail-content" id="detailMySchedule"></div>
+                </div>
+
+                <button class="btn-primary" onclick="giveFeedback()" style="width: 100%; margin-top: 30px;">✍️ Feedback geben (nach dem Date)</button>
+                <button class="btn-danger" onclick="deleteDate()" style="width: 100%; margin-top: 10px;">🗑️ Löschen</button>
+            </div>
+        </div>
+
+        <!-- Last Minute Changes -->
+        <div id="changes" class="view">
+            <div class="changes-container">
+                <button class="btn-secondary" onclick="showView('calendar')" style="margin-bottom: 20px;">← Zurück</button>
+                
+                <h2 style="color: #208c9e; margin-bottom: 20px;">⚡ Kurzfristige Änderungen</h2>
+                
+                <div class="alert alert-warning">
+                    <strong>📢 ACHTUNG:</strong> Hier siehst du Änderungen, die ich kurzfristig vorgenommen habe. Bitte beachte diese sorgfältig!
+                </div>
+
+                <div id="changesList"></div>
+
+                <button class="btn-secondary" onclick="showView('calendar')" style="margin-top: 30px;">Zurück zum Kalender</button>
+            </div>
+        </div>
+
+        <!-- Admin/Add Dates -->
+        <div id="admin" class="view">
+            <div class="admin-section">
+                <button class="btn-secondary" onclick="showView('calendar')" style="margin-bottom: 20px;">← Zurück</button>
+                
+                <h2 style="color: #208c9e; margin-bottom: 30px;">⚙️ Dates hinzufügen & verwalten</h2>
+
+                <form id="dateForm">
+                    <div class="admin-form-group">
+                        <h4>Grundinformationen</h4>
+                        <div class="two-column">
+                            <div>
+                                <label for="title">Date-Titel *</label>
+                                <input type="text" id="title" required placeholder="z.B. Dinner Date">
+                            </div>
+                            <div>
+                                <label for="category">Kategorie *</label>
+                                <select id="category" required>
+                                    <option value="">-- Wählen --</option>
+                                    <option value="quality-time">💑 Zeit zu zweit</option>
+                                    <option value="activity">🎯 Aktivität</option>
+                                    <option value="special">✨ Besonderes</option>
+                                    <option value="relax">🧘 Entspannung</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <h4>Termin & Ort</h4>
+                        <div class="two-column">
+                            <div>
+                                <label for="date">Datum *</label>
+                                <input type="date" id="date" required>
+                            </div>
+                            <div>
+                                <label for="time">Uhrzeit *</label>
+                                <input type="time" id="time" required>
+                            </div>
+                        </div>
+                        <div class="two-column">
+                            <div>
+                                <label for="duration">Dauer (in Minuten) *</label>
+                                <input type="number" id="duration" required placeholder="z.B. 120">
+                            </div>
+                            <div>
+                                <label for="location">Ort/Treffpunkt *</label>
+                                <input type="text" id="location" required placeholder="z.B. Restaurant XYZ">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <h4>Aktivität & Details</h4>
+                        <label for="activity">Detaillierte Beschreibung der Aktivität *</label>
+                        <textarea id="activity" required placeholder="Was genau werden wir machen? Lass keine Überraschungen!"></textarea>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <h4>Sensorische Informationen (für Nela wichtig!)</h4>
+                        <label for="soundLevel">Lautstärke-Level</label>
+                        <select id="soundLevel">
+                            <option value="Sehr leise (1-2)">🔇 Sehr leise (1-2)</option>
+                            <option value="Leise (3-4)">🔉 Leise (3-4)</option>
+                            <option value="Moderat (5-6)">🔊 Moderat (5-6)</option>
+                            <option value="Laut (7-8)">🔊🔊 Laut (7-8)</option>
+                            <option value="Sehr laut (9-10)">🔊🔊🔊 Sehr laut (9-10)</option>
+                        </select>
+
+                        <label for="crowd" style="margin-top: 15px;">Menschenmenge</label>
+                        <select id="crowd">
+                            <option value="Nur wir zu zweit">👥 Nur wir zu zweit</option>
+                            <option value="Wenig Menschen (5-10)">👥👥 Wenig Menschen (5-10)</option>
+                            <option value="Moderat (10-50)">👥👥👥 Moderat (10-50)</option>
+                            <option value="Viel (50+)">👥👥👥👥 Viel (50+)</option>
+                        </select>
+
+                        <label for="stimming" style="margin-top: 15px;">Stimming-Tipps</label>
+                        <textarea id="stimming" placeholder="z.B. Du kannst deine Fidget-Toys mitbringen, Musik hören, ins Freie gehen"></textarea>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <h4>Backup-Plan</h4>
+                        <label for="backupPlan">Falls zu überwältigend (Alternativen, Pausen, etc.)</label>
+                        <textarea id="backupPlan" placeholder="z.B. Wir können ins Freie gehen, eine Pause machen, nach Hause fahren"></textarea>
+                    </div>
+
+                    <div class="admin-form-group">
+                        <h4>Sonstiges</h4>
+                        <div class="two-column">
+                            <div>
+                                <label for="cost">Kosten</label>
+                                <input type="text" id="cost" placeholder="z.B. 40€ oder kostenlos">
+                            </div>
+                            <div>
+                                <label for="bring">Mitbringen</label>
+                                <input type="text" id="bring" placeholder="z.B. Portemonnaie, Jacke">
+                            </div>
+                        </div>
+
+                        <label for="buffer" style="margin-top: 15px;">Pufferzeit (Minuten vorher einplanen)</label>
+                        <input type="number" id="buffer" value="30" placeholder="z.B. 30">
+
+                        <label for="mySchedule" style="margin-top: 15px;">Mein Tagesablauf davor (kurz erklären, damit Nela versteht, ob ich gestresst bin)</label>
+                        <textarea id="mySchedule" placeholder="z.B. Morgens Besprechung bei der Arbeit, dann 30 Min. Weg. Ich könnte leicht verspätet sein."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 15px;">✅ Date speichern</button>
+                </form>
+
+                <div id="existingDates" style="margin-top: 40px;">
+                    <h3 style="color: #208c9e; margin-bottom: 20px;">Alle eingeplanten Dates</h3>
+                    <div id="datesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Form -->
+        <div id="feedback" class="view">
+            <div class="feedback-container">
+                <button class="btn-secondary" onclick="showView('calendar')" style="margin-bottom: 20px;">← Zurück</button>
+                
+                <h2 style="color: #208c9e; margin-bottom: 30px;">✍️ Feedback zum Date</h2>
+
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label>Wie hat dir das Date gefallen? (1-10)</label>
+                        <div class="rating-group" id="ratingGroup"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="energy">Wie war dein Energie-Level danach?</label>
+                        <select id="energy">
+                            <option value="">-- Wählen --</option>
+                            <option value="Sehr erschöpft">😴 Sehr erschöpft</option>
+                            <option value="Etwas müde">😌 Etwas müde</option>
+                            <option value="Neutral">😐 Neutral</option>
+                            <option value="Energisch">⚡ Energisch</option>
+                            <option value="Überwältigend">😵 Überwältigend (zu viel)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sensoryFeedback">War etwas sensorisch überwältigend?</label>
+                        <textarea id="sensoryFeedback" placeholder="z.B. Zu laut, zu hell, zu viele Menschen..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatWorked">Was hat gut funktioniert?</label>
+                        <textarea id="whatWorked" placeholder="z.B. Der Ort war ruhig, die Dauer war perfekt..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="improvement">Was könnte ich beim nächsten Mal besser machen?</label>
+                        <textarea id="improvement" placeholder="z.B. Mehr Pause vorher, anderer Ort, kürzere Dauer..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Weitere Notizen</label>
+                        <textarea id="notes" placeholder="Sonstiges, das ich wissen sollte..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 15px;">💾 Feedback speichern</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Management
+        const app = {
+            dates: [],
+            feedback: [],
+            changes: [],
+            currentDate: new Date(),
+            currentDetailIndex: null,
+            currentFilter: 'all',
+
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.renderCalendar();
+                this.initRatingButtons();
+            },
+
+            loadData() {
+                const savedDates = localStorage.getItem('nelaDates');
+                const savedFeedback = localStorage.getItem('nelaFeedback');
+                const savedChanges = localStorage.getItem('nelaChanges');
+
+                if (savedDates) this.dates = JSON.parse(savedDates);
+                if (savedFeedback) this.feedback = JSON.parse(savedFeedback);
+                if (savedChanges) this.changes = JSON.parse(savedChanges);
+            },
+
+            saveData() {
+                localStorage.setItem('nelaDates', JSON.stringify(this.dates));
+                localStorage.setItem('nelaFeedback', JSON.stringify(this.feedback));
+                localStorage.setItem('nelaChanges', JSON.stringify(this.changes));
+            },
+
+            setupEventListeners() {
+                document.getElementById('dateForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addDate();
+                });
+
+                document.getElementById('feedbackForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveFeedback();
+                });
+            },
+
+            addDate() {
+                const newDate = {
+                    id: Date.now(),
+                    title: document.getElementById('title').value,
+                    category: document.getElementById('category').value,
+                    date: document.getElementById('date').value,
+                    time: document.getElementById('time').value,
+                    duration: document.getElementById('duration').value,
+                    location: document.getElementById('location').value,
+                    activity: document.getElementById('activity').value,
+                    soundLevel: document.getElementById('soundLevel').value,
+                    crowd: document.getElementById('crowd').value,
+                    stimming: document.getElementById('stimming').value,
+                    backupPlan: document.getElementById('backupPlan').value,
+                    cost: document.getElementById('cost').value,
+                    bring: document.getElementById('bring').value,
+                    buffer: document.getElementById('buffer').value,
+                    mySchedule: document.getElementById('mySchedule').value,
+                };
+
+                this.dates.push(newDate);
+                this.saveData();
+                document.getElementById('dateForm').reset();
+                this.renderCalendar();
+                this.showView('calendar');
+                alert('✅ Date erfolgreich hinzugefügt!');
+            },
+
+            deleteDate() {
+                if (confirm('Bist du sicher, dass du dieses Date löschen möchtest?')) {
+                    this.dates = this.dates.filter((_, i) => i !== this.currentDetailIndex);
+                    this.saveData();
+                    this.renderCalendar();
+                    this.showView('calendar');
+                }
+            },
+
+            renderCalendar() {
+                const year = app.currentDate.getFullYear();
+                const month = app.currentDate.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+
+                document.getElementById('monthTitle').textContent = 
+                    firstDay.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+
+                const monthDates = app.dates.filter(date => {
+                    const dateObj = new Date(date.date);
+                    return dateObj.getMonth() === month && dateObj.getFullYear() === year;
+                });
+
+                const filteredDates = app.currentFilter === 'all' 
+                    ? monthDates 
+                    : monthDates.filter(d => d.category === app.currentFilter);
+
+                const grid = document.getElementById('calendarGrid');
+                grid.innerHTML = '';
+
+                if (filteredDates.length === 0) {
+                    document.getElementById('noData').style.display = 'block';
+                    return;
+                }
+
+                document.getElementById('noData').style.display = 'none';
+
+                filteredDates.forEach((date, index) => {
+                    const originalIndex = app.dates.indexOf(date);
+                    const card = document.createElement('div');
+                    card.className = `date-card cat-${['quality-time', 'activity', 'special', 'relax'].indexOf(date.category) + 1 || 1}`;
+                    card.innerHTML = `
+                        <div class="date-title">${date.title}</div>
+                        <div class="date-meta">${new Date(date.date).toLocaleDateString('de-DE')}</div>
+                        <div class="date-meta">⏰ ${date.time} (${date.duration} Min.)</div>
+                        <div class="date-category">${date.category}</div>
+                    `;
+                    card.onclick = () => app.showDetail(originalIndex);
+                    grid.appendChild(card);
+                });
+
+                this.renderExistingDates();
+                this.renderChanges();
+            },
+
+            showDetail(index) {
+                const date = app.dates[index];
+                app.currentDetailIndex = index;
+
+                document.getElementById('detailTitle').textContent = date.title;
+                document.getElementById('detailCategory').textContent = date.category;
+                document.getElementById('detailDate').textContent = new Date(date.date).toLocaleDateString('de-DE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('detailTime').textContent = date.time;
+                document.getElementById('detailDuration').textContent = `${date.duration} Minuten`;
+                document.getElementById('detailLocation').textContent = date.location;
+                document.getElementById('detailActivity').textContent = date.activity;
+                document.getElementById('detailBuffer').textContent = `${date.buffer} Minuten vorher Zeit für Vorbereitung einplanen`;
+                document.getElementById('detailCost').textContent = date.cost || 'Keine Kosten';
+                document.getElementById('detailBring').textContent = date.bring || 'Nichts Spezielles';
+                document.getElementById('detailSoundLevel').textContent = date.soundLevel;
+                document.getElementById('detailCrowd').textContent = date.crowd;
+                document.getElementById('detailStimming').textContent = date.stimming || 'Allgemeine Tipps werden folgen';
+                document.getElementById('detailBackup').textContent = date.backupPlan || 'Wir finden eine Lösung zusammen';
+                document.getElementById('detailMySchedule').textContent = date.mySchedule || 'Mein Tag ist entspannt';
+
+                this.showView('detail');
+            },
+
+            giveFeedback() {
+                document.getElementById('feedbackForm').reset();
+                document.getElementById('ratingGroup').innerHTML = '';
+                for (let i = 1; i <= 10; i++) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'rating-btn';
+                    btn.textContent = i;
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        document.getElementById('feedbackForm').dataset.rating = i;
+                    };
+                    document.getElementById('ratingGroup').appendChild(btn);
+                }
+                this.showView('feedback');
+            },
+
+            saveFeedback() {
+                const rating = document.getElementById('feedbackForm').dataset.rating;
+                const feedback = {
+                    dateId: app.dates[app.currentDetailIndex].id,
+                    rating: rating,
+                    energy: document.getElementById('energy').value,
+                    sensoryFeedback: document.getElementById('sensoryFeedback').value,
+                    whatWorked: document.getElementById('whatWorked').value,
+                    improvement: document.getElementById('improvement').value,
+                    notes: document.getElementById('notes').value,
+                    timestamp: new Date().toISOString(),
+                };
+                app.feedback.push(feedback);
+                app.saveData();
+                alert('✅ Feedback gespeichert! Danke für deine ehrliche Rückmeldung! 💕');
+                this.showView('calendar');
+            },
+
+            renderExistingDates() {
+                const list = document.getElementById('datesList');
+                list.innerHTML = '';
+                app.dates.forEach((date, index) => {
+                    const item = document.createElement('div');
+                    item.style.cssText = 'background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 6px; border-left: 4px solid #208c9e;';
+                    item.innerHTML = `
+                        <strong>${date.title}</strong> - ${date.date} ${date.time}
+                        <br><small style="color: #666;">📍 ${date.location} | ⏱️ ${date.duration} Min.</small>
+                        <button class="btn-danger" onclick="app.deleteDate.call({currentDetailIndex: ${index}})" style="float: right; margin-top: 10px; padding: 5px 10px; font-size: 12px;">Löschen</button>
+                    `;
+                    list.appendChild(item);
+                });
+            },
+
+            renderChanges() {
+                const list = document.getElementById('changesList');
+                list.innerHTML = '';
+                if (app.changes.length === 0) {
+                    list.innerHTML = '<p style="color: #666; text-align: center;">Keine Änderungen!</p>';
+                    return;
+                }
+                app.changes.forEach(change => {
+                    const item = document.createElement('div');
+                    item.className = 'change-item';
+                    item.innerHTML = `
+                        <div class="change-field">${change.dateTitle}</div>
+                        <div><strong>${change.field}:</strong></div>
+                        <div class="change-old">${change.oldValue}</div>
+                        <div class="change-new">→ ${change.newValue}</div>
+                        <small style="color: #666;">Geändert: ${new Date(change.timestamp).toLocaleString('de-DE')}</small>
+                    `;
+                    list.appendChild(item);
+                });
+            },
+
+            initRatingButtons() {
+                const group = document.getElementById('ratingGroup');
+                if (group) {
+                    for (let i = 1; i <= 10; i++) {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'rating-btn';
+                        btn.textContent = i;
+                        btn.onclick = (e) => {
+                            e.preventDefault();
+                            document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+                            btn.classList.add('selected');
+                        };
+                        group.appendChild(btn);
+                    }
+                }
+            }
+        };
+
+        // Global Functions
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewName).classList.add('active');
+        }
+
+        function previousMonth() {
+            app.currentDate.setMonth(app.currentDate.getMonth() - 1);
+            app.renderCalendar();
+        }
+
+        function nextMonth() {
+            app.currentDate.setMonth(app.currentDate.getMonth() + 1);
+            app.renderCalendar();
+        }
+
+        function filterDates(category) {
+            app.currentFilter = category;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            app.renderCalendar();
+        }
+
+        function toggleHighContrast() {
+            document.body.classList.toggle('high-contrast');
+            localStorage.setItem('highContrast', document.body.classList.contains('high-contrast'));
+        }
+
+        function downloadData() {
+            const data = {
+                dates: app.dates,
+                feedback: app.feedback,
+                changes: app.changes,
+                backup_timestamp: new Date().toISOString()
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Nelas_Calendar_Backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            alert('✅ Backup heruntergeladen!');
+        }
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('highContrast') === 'true') {
+                document.body.classList.add('high-contrast');
+            }
+            app.init();
+        });
+    </script>
+</body>
+</html>
